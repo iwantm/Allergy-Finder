@@ -15,12 +15,12 @@ const (
 )
 
 type Product struct {
-	Brand                    string
-	ProductName              string
-	Barcode                  string
-	Ingredients              string
-	AllergensFromIngredients string
-	Allergens                string
+	Brand                    string `bson:"brands,omitempty"`
+	ProductName              string `bson:"product_name_en,omitempty"`
+	Barcode                  string `bson:"code,omitempty"`
+	Ingredients              string `bson:"ingredients_text_en,omitempty"`
+	AllergensFromIngredients string `bson:"allergens_from_ingredients,omitempty"`
+	Allergens                string `bson:"allergens,omitempty"`
 }
 
 func (p Product) Error() string {
@@ -36,25 +36,42 @@ func SearchProduct(barcode string) *Product {
 		return nil
 	}
 	coll := client.Database(DBName).Collection("products")
-	fmt.Println(coll.Name())
 	var result bson.M
 
 	err = coll.FindOne(ctx, bson.M{"code": barcode}).Decode(&result)
 
 	if err != nil {
+		fmt.Println(err)
 		return nil
 	}
 
-	product := Product{
-		result["brands"].(string),
-		result["product_name_en"].(string),
-		result["code"].(string),
-		result["ingredients_text_en"].(string),
-		//add ingredients_hierarchy
-		result["allergens_from_ingredients"].(string),
-		result["allergens"].(string),
+	product := Product{}
+	brand, brandBool := result["brands"].(string)
+	name, nameBool := result["product_name_en"].(string)
+	code, codeBool := result["code"].(string)
+	ingredients, ingredientsBool := result["ingredients_text_en"].(string)
+	allergensFromIngredients, allergensFromIngredientsBool := result["allergens_from_ingredients"].(string)
+	allergens, allergensBool := result["allergens"].(string)
+
+	switch {
+	case brandBool:
+		product.Brand = brand
+		fallthrough
+	case nameBool:
+		product.ProductName = name
+		fallthrough
+	case codeBool:
+		product.Barcode = code
+		fallthrough
+	case ingredientsBool:
+		product.Ingredients = ingredients
+		fallthrough
+	case allergensFromIngredientsBool:
+		product.AllergensFromIngredients = allergensFromIngredients
+		fallthrough
+	case allergensBool:
+		product.Allergens = allergens
 	}
 
 	return &product
-
 }

@@ -30,5 +30,5 @@ func getProduct(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	w.WriteJson(product)
+	_ = w.WriteJson(product)
 }
