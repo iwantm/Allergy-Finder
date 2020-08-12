@@ -15,12 +15,13 @@ const (
 )
 
 type Product struct {
-	Brand                    string `bson:"brands,omitempty"`
-	ProductName              string `bson:"product_name_en,omitempty"`
-	Barcode                  string `bson:"code,omitempty"`
-	Ingredients              string `bson:"ingredients_text_en,omitempty"`
-	AllergensFromIngredients string `bson:"allergens_from_ingredients,omitempty"`
-	Allergens                string `bson:"allergens,omitempty"`
+	Brand                    string
+	ProductName              string
+	Barcode                  string
+	Ingredients              string
+	AllergensFromIngredients string
+	Allergens                string
+	Traces                   string
 }
 
 func (p Product) Error() string {
@@ -47,30 +48,40 @@ func SearchProduct(barcode string) *Product {
 
 	product := Product{}
 	brand, brandBool := result["brands"].(string)
-	name, nameBool := result["product_name_en"].(string)
+	nameEn, nameEnBool := result["product_name_en"].(string)
+	name, nameBool := result["product_name"].(string)
 	code, codeBool := result["code"].(string)
-	ingredients, ingredientsBool := result["ingredients_text_en"].(string)
+	ingredientsEn, ingredientsEnBool := result["ingredients_text_en"].(string)
+	ingredients, ingredientsBool := result["ingredients_text"].(string)
 	allergensFromIngredients, allergensFromIngredientsBool := result["allergens_from_ingredients"].(string)
 	allergens, allergensBool := result["allergens"].(string)
+	traces, tracesBool := result["traces_from_ingredients"].(string)
+	fmt.Println(nameEnBool)
 
-	switch {
-	case brandBool:
+	if brandBool {
 		product.Brand = brand
-		fallthrough
-	case nameBool:
+	}
+	if nameEnBool {
+		product.ProductName = nameEn
+	} else if !nameEnBool && nameBool {
 		product.ProductName = name
-		fallthrough
-	case codeBool:
+	}
+	if codeBool {
 		product.Barcode = code
-		fallthrough
-	case ingredientsBool:
+	}
+	if ingredientsEnBool {
+		product.Ingredients = ingredientsEn
+	} else if !ingredientsEnBool && ingredientsBool {
 		product.Ingredients = ingredients
-		fallthrough
-	case allergensFromIngredientsBool:
+	}
+	if allergensFromIngredientsBool {
 		product.AllergensFromIngredients = allergensFromIngredients
-		fallthrough
-	case allergensBool:
+	}
+	if allergensBool {
 		product.Allergens = allergens
+	}
+	if tracesBool {
+		product.Traces = traces
 	}
 
 	return &product
