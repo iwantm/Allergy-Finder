@@ -23,9 +23,9 @@ func RunServer() {
 
 func getProduct(w rest.ResponseWriter, r *rest.Request) {
 	code := r.PathParam("code")
-	product := functions.SearchProduct(code)
+	product, err := functions.SearchDatabase(code)
 
-	if product == nil {
+	if err != nil {
 		rest.NotFound(w, r)
 		return
 	}
